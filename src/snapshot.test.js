@@ -19,6 +19,16 @@ describe('snapshot module', () => {
     expect(parsed.machine).toBe(os.hostname());
   });
 
+  test('createSnapshot includes a createdAt timestamp', () => {
+    const before = Date.now();
+    const filePath = createSnapshot('timestamptest', {}, TEST_DIR);
+    const after = Date.now();
+    const parsed = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    const createdAt = new Date(parsed.createdAt).getTime();
+    expect(createdAt).toBeGreaterThanOrEqual(before);
+    expect(createdAt).toBeLessThanOrEqual(after);
+  });
+
   test('loadSnapshot retrieves snapshot by name', () => {
     createSnapshot('loadtest', { foo: 'bar' }, TEST_DIR);
     const snap = loadSnapshot('loadtest', TEST_DIR);
