@@ -1,0 +1,12 @@
+node_modules/
+
+dist/
+.env.local
+*.swo
+.parcel-cache/
+yarn-debug.log*
+.next/
+*.log
+Thumbs.db
+npm-debug.log*
+.cache/
