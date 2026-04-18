@@ -31,6 +31,14 @@ describe('diffBrew', () => {
     const diff = diffBrew({}, {});
     expect(diff.added.formulae).toHaveLength(0);
   });
+
+  test('does not include common entries in added or removed', () => {
+    const diff = diffBrew(snap, curr);
+    expect(diff.added.formulae).not.toContain('git');
+    expect(diff.removed.formulae).not.toContain('git');
+    expect(diff.added.casks).not.toContain('iterm2');
+    expect(diff.removed.casks).not.toContain('iterm2');
+  });
 });
 
 describe('formatBrewDiff', () => {
