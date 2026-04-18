@@ -28,6 +28,12 @@ List all saved snapshots:
 stackshot list
 ```
 
+Delete a snapshot:
+
+```bash
+stackshot delete my-setup
+```
+
 Snapshots can include dotfiles, shell aliases, environment variables, and tool versions (Node, Python, etc.). Configs are stored locally or can be synced via a remote source.
 
 ### Example workflow
