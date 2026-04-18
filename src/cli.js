@@ -1,69 +1,79 @@
-#!/usr/bin/env node
-const { createSnapshot, loadSnapshot, listSnapshots, deleteSnapshot } = require('./snapshot');
-
-const [,, command, ...args] = process.argv;
+const { handleEnvCommand } = require('./cli-env');
+const { handleToolsCommand } = require('./cli-tools');
+const { handleBrewCommand } = require('./cli-brew');
+const { handleGitCommand } = require('./cli-git');
+const { handleVSCodeCommand } = require('./cli-vscode');
+const { handleSshCommand } = require('./cli-ssh');
+const { handleShellCommand } = require('./cli-shell');
+const { handleNpmCommand } = require('./npm-cli');
+const { handleDockerCommand } = require('./cli-docker');
+const { handlePythonCommand } = require('./cli-python');
+const { handleRubyCommand } = require('./cli-ruby');
+const { handleGoCommand } = require('./cli-golang');
+const { handleRustCommand } = require('./cli-rust');
+const { handleJavaCommand } = require('./cli-java');
+const { handlePhpCommand } = require('./cli-php');
+const { handleDotnetCommand } = require('./cli-dotnet');
+const { handleKotlinCommand } = require('./cli-kotlin');
 
 function printUsage() {
-  console.log(`
-stackshot — snapshot and restore local dev environment configs
+  console.log(`stackshot <command> [subcommand] [options]
 
-Usage:
-  stackshot save <name> <key=value...>   Save a snapshot with env key/value pairs
-  stackshot load <name>                  Print snapshot data
-  stackshot list                         List all snapshots
-  stackshot delete <name>                Delete a snapshot
+Commands:
+  env       Manage environment variables
+  tools     Manage tool versions
+  brew      Manage Homebrew packages
+  git       Manage git config
+  vscode    Manage VS Code extensions/settings
+  ssh       Manage SSH keys/config
+  shell     Manage shell aliases/config
+  npm       Manage npm config
+  docker    Manage Docker images/containers
+  python    Manage Python/pip
+  ruby      Manage Ruby/gems
+  go        Manage Go packages
+  rust      Manage Rust/cargo
+  java      Manage Java/maven
+  php       Manage PHP/composer
+  dotnet    Manage .NET/nuget
+  kotlin    Manage Kotlin/gradle
 `);
 }
 
-function parseKV(pairs) {
-  return pairs.reduce((acc, pair) => {
-    const idx = pair.indexOf('=');
-    if (idx === -1) throw new Error(`Invalid key=value pair: "${pair}"`);
-    const key = pair.slice(0, idx);
-    const value = pair.slice(idx + 1);
-    acc[key] = value;
-    return acc;
-  }, {});
+function parseKV(str) {
+  const idx = str.indexOf('=');
+  if (idx === -1) return null;
+  return { key: str.slice(0, idx), value: str.slice(idx + 1) };
 }
 
-try {
+async function main() {
+  const [,, command, ...args] = process.argv;
+  if (!command || command === '--help' || command === '-h') { printUsage(); return; }
   switch (command) {
-    case 'save': {
-      const [name, ...pairs] = args;
-      if (!name) throw new Error('Snapshot name is required');
-      const data = parseKV(pairs);
-      const filePath = createSnapshot(name, data);
-      console.log(`✓ Snapshot "${name}" saved to ${filePath}`);
-      break;
-    }
-    case 'load': {
-      const [name] = args;
-      if (!name) throw new Error('Snapshot name is required');
-      const snap = loadSnapshot(name);
-      console.log(`Snapshot: ${snap.name}`);
-      console.log(`Created:  ${snap.createdAt}`);
-      console.log(`Machine:  ${snap.machine}`);
-      console.log('Data:');
-      Object.entries(snap.data).forEach(([k, v]) => console.log(`  ${k}=${v}`));
-      break;
-    }
-    case 'list': {
-      const snaps = listSnapshots();
-      if (snaps.length === 0) { console.log('No snapshots found.'); break; }
-      snaps.forEach(s => console.log(`  ${s.name.padEnd(20)} ${s.createdAt}  (${s.machine})`));
-      break;
-    }
-    case 'delete': {
-      const [name] = args;
-      if (!name) throw new Error('Snapshot name is required');
-      deleteSnapshot(name);
-      console.log(`✓ Snapshot "${name}" deleted`);
-      break;
-    }
+    case 'env':    return handleEnvCommand(args);
+    case 'tools':  return handleToolsCommand(args);
+    case 'brew':   return handleBrewCommand(args);
+    case 'git':    return handleGitCommand(args);
+    case 'vscode': return handleVSCodeCommand(args);
+    case 'ssh':    return handleSshCommand(args);
+    case 'shell':  return handleShellCommand(args);
+    case 'npm':    return handleNpmCommand(args);
+    case 'docker': return handleDockerCommand(args);
+    case 'python': return handlePythonCommand(args);
+    case 'ruby':   return handleRubyCommand(args);
+    case 'go':     return handleGoCommand(args);
+    case 'rust':   return handleRustCommand(args);
+    case 'java':   return handleJavaCommand(args);
+    case 'php':    return handlePhpCommand(args);
+    case 'dotnet': return handleDotnetCommand(args);
+    case 'kotlin': return handleKotlinCommand(args);
     default:
+      console.error(`Unknown command: ${command}`);
       printUsage();
+      process.exit(1);
   }
-} catch (err) {
-  console.error(`Error: ${err.message}`);
-  process.exit(1);
 }
+
+main().catch(e => { console.error(e.message); process.exit(1); });
+
+module.exports = { printUsage, parseKV };
