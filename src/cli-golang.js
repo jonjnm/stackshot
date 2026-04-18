@@ -32,7 +32,11 @@ async function handleGoCommand(args) {
       process.exit(1);
     }
     const snapshot = await loadSnapshot(snapshotName);
-    if (!snapshot || !snapshot.go) {
+    if (!snapshot) {
+      console.error(`Snapshot "${snapshotName}" not found`);
+      process.exit(1);
+    }
+    if (!snapshot.go) {
       console.error(`No go data in snapshot "${snapshotName}"`);
       process.exit(1);
     }
