@@ -9,32 +9,39 @@ function isNpmAvailable() {
   }
 }
 
-function captureNpmConfig() {
+async function captureNpmConfig() {
   try {
-    const output = execSync('npm config list --json', { stdio: 'pipe' }).toString();
-    return JSON.parse(output);
+    const raw = execSync('npm config list --json', { stdio: 'pipe' }).toString();
+    return JSON.parse(raw);
   } catch {
     return {};
   }
 }
 
-function diffNpmConfig(snapshot, current) {
-  const diff = { added: {}, removed: {}, changed: {} };
-  for (const key of Object.keys(current)) {
-    if (!(key in snapshot)) diff.added[key] = current[key];
-    else if (snapshot[key] !== current[key]) diff.changed[key] = { from: snapshot[key], to: current[key] };
-  }
-  for (const key of Object.keys(snapshot)) {
-    if (!(key in current)) diff.removed[key] = snapshot[key];
+function diffNpmConfig(saved, current) {
+  const diff = {};
+  const allKeys = new Set([...Object.keys(saved), ...Object.keys(current)]);
+  for (const key of allKeys) {
+    const oldVal = saved[key];
+    const newVal = current[key];
+    if (JSON.stringify(oldVal) !== JSON.stringify(newVal)) {
+      diff[key] = { old: oldVal, new: newVal };
+    }
   }
   return diff;
 }
 
 function formatNpmDiff(diff) {
   const lines = [];
-  for (const [k, v] of Object.entries(diff.added)) lines.push(`+ ${k} = ${v}`);
-  for (const [k, v] of Object.entries(diff.removed)) lines.push(`- ${k} = ${v}`);
-  for (const [k, v] of Object.entries(diff.changed)) lines.push(`~ ${k}: ${v.from} → ${v.to}`);
+  for (const [key, { old: oldVal, new: newVal }] of Object.entries(diff)) {
+    if (oldVal === undefined) {
+      lines.push(`+ ${key}: ${newVal}`);
+    } else if (newVal === undefined) {
+      lines.push(`- ${key}: ${oldVal}`);
+    } else {
+      lines.push(`~ ${key}: ${oldVal} -> ${newVal}`);
+    }
+  }
   return lines.join('\n');
 }
 
