@@ -64,4 +64,17 @@ function formatRustDiff(diff) {
   return lines.join('\n');
 }
 
-module.exports = { isRustAvailable, captureRustVersion, captureCargoPackages, diffRust, formatRustDiff };
+/**
+ * Returns true if the diff has any meaningful changes (version bump,
+ * added/removed/updated packages).
+ */
+function hasRustChanges(diff) {
+  return (
+    diff.versionChanged !== null ||
+    Object.keys(diff.added).length > 0 ||
+    Object.keys(diff.removed).length > 0 ||
+    Object.keys(diff.changed).length > 0
+  );
+}
+
+module.exports = { isRustAvailable, captureRustVersion, captureCargoPackages, diffRust, formatRustDiff, hasRustChanges };
