@@ -21,11 +21,21 @@ function captureElixirVersion() {
 
 function captureHexPackages() {
   try {
-    const out = execSync('mix hex.info 2>/dev/null && mix deps 2>/dev/null').toString();
+    const out = execSync('mix deps 2>/dev/null').toString();
     const lines = out.split('\n').filter(l => l.match(/^\* \w/));
     return lines.map(l => l.replace(/^\* /, '').split(' ')[0]);
   } catch {
     return [];
+  }
+}
+
+function captureOtpVersion() {
+  try {
+    const out = execSync('elixir --version 2>/dev/null').toString().trim();
+    const match = out.match(/OTP ([\d]+)/);
+    return match ? match[1] : null;
+  } catch {
+    return null;
   }
 }
 
@@ -46,4 +56,4 @@ function formatElixirDiff(diff) {
   return lines.join('\n');
 }
 
-module.exports = { isElixirAvailable, captureElixirVersion, captureHexPackages, diffElixir, formatElixirDiff };
+module.exports = { isElixirAvailable, captureElixirVersion, captureHexPackages, captureOtpVersion, diffElixir, formatElixirDiff };
