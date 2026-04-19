@@ -13,7 +13,6 @@ function isZshAvailable() {
 }
 
 function captureShellAliases() {
-  const shell = process.env.SHELL || '';
   const aliases = {};
 
   try {
@@ -23,7 +22,8 @@ function captureShellAliases() {
     }).toString();
 
     for (const line of raw.split('\n')) {
-      const match = line.match(/^alias\s+([^=]+)=['"](.*)['"]$/);
+      // match both single and double quoted alias values
+      const match = line.match(/^alias\s+([^=]+)=['"](.*)['"](\s*)$/);
       if (match) aliases[match[1].trim()] = match[2];
     }
   } catch {
@@ -41,7 +41,12 @@ function captureShellConfig() {
   for (const file of candidates) {
     const full = path.join(home, file);
     if (fs.existsSync(full)) {
-      configs[file] = fs.readFileSync(full, 'utf8');
+      try {
+        configs[file] = fs.readFileSync(full, 'utf8');
+      } catch (err) {
+        // file may be unreadable due to permissions
+        configs[file] = null;
+      }
     }
   }
 
