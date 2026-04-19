@@ -63,6 +63,13 @@ describe('handleNpmCommand', () => {
     expect(consoleSpy).toHaveBeenCalledWith(JSON.stringify(config, null, 2));
   });
 
+  test('show exits when snapshot has no npm config', async () => {
+    snapshot.loadSnapshot.mockResolvedValue({ env: { FOO: 'bar' } });
+
+    await expect(handleNpmCommand(['show', 'mysnap'])).rejects.toThrow('exit');
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('No npm config'));
+  });
+
   test('exits when npm is not available', async () => {
     npm.isNpmAvailable.mockReturnValue(false);
     await expect(handleNpmCommand(['capture', 'x'])).rejects.toThrow('exit');
