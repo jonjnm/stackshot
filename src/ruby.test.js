@@ -37,6 +37,14 @@ describe('diffRuby', () => {
     const result = diffRuby(base, current);
     expect(result.versionChanged).toEqual({ from: 'ruby 3.1.0p0', to: 'ruby 3.2.0p0' });
   });
+
+  test('handles multiple added and removed gems', () => {
+    const current = { ...base, gems: { rails: '7.0.0', rspec: '3.12.0', minitest: '5.0.0' } };
+    const result = diffRuby(base, current);
+    expect(result.added).toHaveProperty('rspec');
+    expect(result.added).toHaveProperty('minitest');
+    expect(result.removed).toHaveProperty('sinatra');
+  });
 });
 
 describe('formatRubyDiff', () => {
