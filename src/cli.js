@@ -15,65 +15,81 @@ const { handleJavaCommand } = require('./cli-java');
 const { handlePhpCommand } = require('./cli-php');
 const { handleDotnetCommand } = require('./cli-dotnet');
 const { handleKotlinCommand } = require('./cli-kotlin');
+const { handleTerraformCommand } = require('./cli-terraform');
+const { handlePerlCommand } = require('./cli-perl');
+const { handleElixirCommand } = require('./cli-elixir');
+const { handleSwiftCommand } = require('./cli-swift');
+const { handleScalaCommand } = require('./cli-scala');
+const { handleLuaCommand } = require('./cli-lua');
+const { handleHaskellCommand } = require('./cli-haskell');
+const { handleRCommand } = require('./cli-r');
+const { handleJuliaCommand } = require('./cli-julia');
+const { handleCondaCommand } = require('./cli-conda');
+const { handleFlutterCommand } = require('./cli-flutter');
+const { handleAnsibleCommand } = require('./cli-ansible');
+const { handleVagrantCommand } = require('./cli-vagrant');
+const { handleRedisCommand } = require('./cli-redis');
+const { handlePostgresCommand } = require('./cli-postgres');
+const { handleMysqlCommand } = require('./cli-mysql');
+const { handleMongoCommand } = require('./cli-mongodb');
+const { handleNginxCommand } = require('./cli-nginx');
+const { handleApacheCommand } = require('./cli-apache');
 
 function printUsage() {
-  console.log(`stackshot <command> [subcommand] [options]
+  console.log(`
+stackshot — snapshot and restore local dev environment configs
 
-Commands:
-  env       Manage environment variables
-  tools     Manage tool versions
-  brew      Manage Homebrew packages
-  git       Manage git config
-  vscode    Manage VS Code extensions/settings
-  ssh       Manage SSH keys/config
-  shell     Manage shell aliases/config
-  npm       Manage npm config
-  docker    Manage Docker images/containers
-  python    Manage Python/pip
-  ruby      Manage Ruby/gems
-  go        Manage Go packages
-  rust      Manage Rust/cargo
-  java      Manage Java/maven
-  php       Manage PHP/composer
-  dotnet    Manage .NET/nuget
-  kotlin    Manage Kotlin/gradle
-`);
+Usage:
+  stackshot <module> <subcommand> [options]
+
+Modules:
+  env, tools, brew, git, vscode, ssh, shell, npm, docker,
+  python, ruby, go, rust, java, php, dotnet, kotlin, terraform,
+  perl, elixir, swift, scala, lua, haskell, r, julia, conda,
+  flutter, ansible, vagrant, redis, postgres, mysql, mongo,
+  nginx, apache
+
+Subcommands (per module):
+  capture <snapshot>   capture current state into a snapshot
+  diff <s1> <s2>       diff two snapshots
+  show                 show current state
+  `);
 }
 
 function parseKV(str) {
-  const idx = str.indexOf('=');
-  if (idx === -1) return null;
-  return { key: str.slice(0, idx), value: str.slice(idx + 1) };
+  const [key, ...rest] = str.split('=');
+  return { key, value: rest.join('=') };
 }
 
 async function main() {
-  const [,, command, ...args] = process.argv;
-  if (!command || command === '--help' || command === '-h') { printUsage(); return; }
-  switch (command) {
-    case 'env':    return handleEnvCommand(args);
-    case 'tools':  return handleToolsCommand(args);
-    case 'brew':   return handleBrewCommand(args);
-    case 'git':    return handleGitCommand(args);
-    case 'vscode': return handleVSCodeCommand(args);
-    case 'ssh':    return handleSshCommand(args);
-    case 'shell':  return handleShellCommand(args);
-    case 'npm':    return handleNpmCommand(args);
-    case 'docker': return handleDockerCommand(args);
-    case 'python': return handlePythonCommand(args);
-    case 'ruby':   return handleRubyCommand(args);
-    case 'go':     return handleGoCommand(args);
-    case 'rust':   return handleRustCommand(args);
-    case 'java':   return handleJavaCommand(args);
-    case 'php':    return handlePhpCommand(args);
-    case 'dotnet': return handleDotnetCommand(args);
-    case 'kotlin': return handleKotlinCommand(args);
-    default:
-      console.error(`Unknown command: ${command}`);
-      printUsage();
-      process.exit(1);
+  const [,, module, ...args] = process.argv;
+  if (!module || module === '--help' || module === '-h') {
+    printUsage();
+    return;
   }
+  const handlers = {
+    env: handleEnvCommand, tools: handleToolsCommand, brew: handleBrewCommand,
+    git: handleGitCommand, vscode: handleVSCodeCommand, ssh: handleSshCommand,
+    shell: handleShellCommand, npm: handleNpmCommand, docker: handleDockerCommand,
+    python: handlePythonCommand, ruby: handleRubyCommand, go: handleGoCommand,
+    rust: handleRustCommand, java: handleJavaCommand, php: handlePhpCommand,
+    dotnet: handleDotnetCommand, kotlin: handleKotlinCommand, terraform: handleTerraformCommand,
+    perl: handlePerlCommand, elixir: handleElixirCommand, swift: handleSwiftCommand,
+    scala: handleScalaCommand, lua: handleLuaCommand, haskell: handleHaskellCommand,
+    r: handleRCommand, julia: handleJuliaCommand, conda: handleCondaCommand,
+    flutter: handleFlutterCommand, ansible: handleAnsibleCommand, vagrant: handleVagrantCommand,
+    redis: handleRedisCommand, postgres: handlePostgresCommand, mysql: handleMysqlCommand,
+    mongo: handleMongoCommand, nginx: handleNginxCommand, apache: handleApacheCommand
+  };
+  const handler = handlers[module];
+  if (!handler) {
+    console.error(`unknown module: ${module}`);
+    printUsage();
+    process.exit(1);
+  }
+  await handler(args);
 }
 
-main().catch(e => { console.error(e.message); process.exit(1); });
+main().catch(err => { console.error(err.message); process.exit(1); });
 
 module.exports = { printUsage, parseKV };
