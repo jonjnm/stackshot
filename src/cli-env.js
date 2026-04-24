@@ -25,7 +25,11 @@ function handleEnvCommand(args) {
       if (!snap || snap.type !== 'env') {
         return console.error(`Snapshot "${name}" is not an env snapshot.`);
       }
-      writeDotEnv(path.resolve(outFile), snap.vars);
+      const resolvedOut = path.resolve(outFile);
+      if (require('fs').existsSync(resolvedOut) && !rest.includes('--force')) {
+        return console.error(`File "${outFile}" already exists. Use --force to overwrite.`);
+      }
+      writeDotEnv(resolvedOut, snap.vars);
       console.log(`Restored ${Object.keys(snap.vars).length} vars to ${outFile}`);
       break;
     }
