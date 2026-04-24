@@ -43,6 +43,19 @@ describe('handleElixirCommand', () => {
     spy.mockRestore();
   });
 
+  test('diff prints formatted output when changes exist', async () => {
+    isElixirAvailable.mockReturnValue(true);
+    captureElixirVersion.mockReturnValue('1.16.0');
+    captureHexPackages.mockReturnValue(['phoenix', 'plug']);
+    loadSnapshot.mockResolvedValue({ elixir: { version: '1.15.0', packages: ['phoenix'] } });
+    diffElixir.mockReturnValue({ versionChanged: true, added: ['plug'], removed: [] });
+    formatElixirDiff.mockReturnValue('+ plug\nversion: 1.15.0 -> 1.16.0');
+    const spy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    await handleElixirCommand(['diff', 'mysnap']);
+    expect(spy).toHaveBeenCalledWith('+ plug\nversion: 1.15.0 -> 1.16.0');
+    spy.mockRestore();
+  });
+
   test('show prints version and packages', async () => {
     isElixirAvailable.mockReturnValue(true);
     captureElixirVersion.mockReturnValue('1.15.0');
