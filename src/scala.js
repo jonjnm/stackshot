@@ -52,4 +52,17 @@ function formatScalaDiff(diff) {
   return lines.join('\n');
 }
 
-module.exports = { isScalaAvailable, captureScalaVersion, captureScalaPackages, diffScala, formatScalaDiff };
+/**
+ * Returns true if the diff has any meaningful changes (added, removed,
+ * version-changed packages, or a scala version change).
+ */
+function hasScalaChanges(diff) {
+  return (
+    diff.versionDiff ||
+    diff.added.length > 0 ||
+    diff.removed.length > 0 ||
+    diff.versionChanged.length > 0
+  );
+}
+
+module.exports = { isScalaAvailable, captureScalaVersion, captureScalaPackages, diffScala, formatScalaDiff, hasScalaChanges };
