@@ -36,6 +36,17 @@ describe('diffGit', () => {
     expect(Object.keys(diff.removed).length).toBe(0);
     expect(Object.keys(diff.changed).length).toBe(0);
   });
+
+  it('handles multiple simultaneous changes', () => {
+    const current = {
+      available: true,
+      config: { 'user.name': 'Bob', 'user.email': 'b@b.com', 'pull.rebase': 'true' }
+    };
+    const diff = diffGit(base, current);
+    expect(diff.added).toEqual({ 'pull.rebase': 'true' });
+    expect(diff.removed).toEqual({ 'core.editor': 'vim' });
+    expect(diff.changed['user.email']).toEqual({ from: 'a@a.com', to: 'b@b.com' });
+  });
 });
 
 describe('formatGitDiff', () => {
