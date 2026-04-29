@@ -39,6 +39,18 @@ function captureOtpVersion() {
   }
 }
 
+/**
+ * Captures a full snapshot of the current Elixir environment,
+ * including the Elixir version, OTP version, and installed hex packages.
+ */
+function captureElixirSnapshot() {
+  return {
+    version: captureElixirVersion(),
+    otpVersion: captureOtpVersion(),
+    packages: captureHexPackages(),
+  };
+}
+
 function diffElixir(snapshot, current) {
   const added = current.packages.filter(p => !snapshot.packages.includes(p));
   const removed = snapshot.packages.filter(p => !current.packages.includes(p));
@@ -56,4 +68,4 @@ function formatElixirDiff(diff) {
   return lines.join('\n');
 }
 
-module.exports = { isElixirAvailable, captureElixirVersion, captureHexPackages, captureOtpVersion, diffElixir, formatElixirDiff };
+module.exports = { isElixirAvailable, captureElixirVersion, captureHexPackages, captureOtpVersion, captureElixirSnapshot, diffElixir, formatElixirDiff };
