@@ -37,6 +37,13 @@ describe('diffSsh', () => {
     const result = diffSsh(base, current);
     expect(result.hosts.removed).toContain('github.com');
   });
+
+  test('detects both added and removed keys simultaneously', () => {
+    const current = { ...base, keys: ['id_rsa', 'id_work'] };
+    const result = diffSsh(base, current);
+    expect(result.keys.added).toContain('id_work');
+    expect(result.keys.removed).toContain('id_ed25519');
+  });
 });
 
 describe('formatSshDiff', () => {
@@ -53,5 +60,10 @@ describe('formatSshDiff', () => {
   test('formats removed hosts', () => {
     const diff = { keys: { added: [], removed: [] }, hosts: { added: [], removed: ['myserver'] } };
     expect(formatSshDiff(diff)).toContain('myserver');
+  });
+
+  test('formats added hosts', () => {
+    const diff = { keys: { added: [], removed: [] }, hosts: { added: ['newserver'], removed: [] } };
+    expect(formatSshDiff(diff)).toContain('newserver');
   });
 });
